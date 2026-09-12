@@ -66,14 +66,21 @@ std::vector<double> bench_heap(int iterations, bool include_delete)
         obj->id = i;
         obj->value = static_cast<double>(i);
         sink = obj->id;
+
+        // consider both alloc and dealloc
         if (include_delete)
         {
-
             delete obj;
         }
 
         auto end = current_time_ns();
         timings.push_back(static_cast<double>(end - start));
+
+        // consider only alloc
+        if (!include_delete)
+        {
+            delete obj;
+        }
     }
     return timings;
 }
