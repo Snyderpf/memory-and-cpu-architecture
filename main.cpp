@@ -2,6 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include <chrono>
+#include <string>
 
 struct TestObject
 {
@@ -85,18 +86,42 @@ std::vector<double> bench_heap(int iterations, bool include_delete)
     return timings;
 }
 
+void print_stats(const std::string &label, std::vector<double> data)
+{
+    std::sort(data.begin(), data.end());
+
+    double p50 = get_percentile(data, 0.50);
+    double p95 = get_percentile(data, 0.95);
+    double p99 = get_percentile(data, 0.99);
+
+    std::cout << label << " results ==================\n";
+    std::cout << "p50\t: \t" << p50 << "ns\n";
+    std::cout << "p95\t: \t" << p95 << "ns\n";
+    std::cout << "p99\t: \t" << p99 << "ns\n";
+}
+
 int main()
 {
     constexpr int ITERATIONS = 1'000'000;
 
-    std::vector test = {1.4, 2.1, 3.6, 4.4, 5.2, 3.4, 2.4, 1.9, 1.8};
-    std::sort(test.begin(), test.end());
-    auto val = get_percentile(test, 0.5);
-    auto val_1 = get_percentile(test, 0.95);
-    auto val_2 = get_percentile(test, 0.99);
-    std::cout << val << std::endl;
-    std::cout << val_1 << std::endl;
-    std::cout << val_2 << std::endl;
+    std::cout << "===========================================\n";
+    std::cout << "Stack vs Heap Benchmark                    \n";
+    std::cout << "Object size: " << sizeof(TestObject) << "bytes\n";
+    std::cout << "Iterations:  " << ITERATIONS << "\n";
+
+    // Warm up
+    constexpr int WARMUP = 100000;
+    bench_stack(WARMUP);
+    bench_heap(WARMUP, false);
+    bench_heap(WARMUP, true);
+
+    auto stack_bench = bench_stack(ITERATIONS);
+    auto heap_alloc_only = bench_heap(ITERATIONS, false);
+    auto heap_full_lifecycle = bench_heap(ITERATIONS, true);
+
+    print_stats("Stack Bench", stack_bench);
+    print_stats("Heap Allocation Only", heap_alloc_only);
+    print_stats("Heap Full Lifecycle", heap_full_lifecycle);
 
     return 0;
 }
