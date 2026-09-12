@@ -52,6 +52,32 @@ std::vector<double> bench_stack(int iterations)
     return timings;
 }
 
+std::vector<double> bench_heap(int iterations, bool include_delete)
+{
+    std::vector<double> timings;
+    timings.reserve(iterations);
+
+    volatile int sink = 0;
+
+    for (int i = 0; i < iterations; ++i)
+    {
+        auto start = current_time_ns();
+        TestObject *obj = new TestObject();
+        obj->id = i;
+        obj->value = static_cast<double>(i);
+        sink = obj->id;
+        if (include_delete)
+        {
+
+            delete obj;
+        }
+
+        auto end = current_time_ns();
+        timings.push_back(static_cast<double>(end - start));
+    }
+    return timings;
+}
+
 int main()
 {
     constexpr int ITERATIONS = 1'000'000;
