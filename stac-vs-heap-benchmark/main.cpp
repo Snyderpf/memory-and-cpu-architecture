@@ -100,28 +100,46 @@ void print_stats(const std::string &label, std::vector<double> data)
     std::cout << "p99\t: \t" << p99 << "ns\n";
 }
 
-int main()
+int main(int argc, char *argv[])
 {
     constexpr int ITERATIONS = 1'000'000;
+    constexpr int WARMUP = 100000;
 
+    if (argc < 2)
+    {
+        std::cerr << "Usage: " << argv[0] << "[stack|heap_alloc|heap_full]\n";
+        return 1;
+    }
+
+    std::string mode = argv[1];
     std::cout << "===========================================\n";
     std::cout << "Stack vs Heap Benchmark                    \n";
     std::cout << "Object size: " << sizeof(TestObject) << "bytes\n";
     std::cout << "Iterations:  " << ITERATIONS << "\n";
+    std::cout << "Mode:       " << mode << "\n";
 
-    // Warm up
-    constexpr int WARMUP = 100000;
-    bench_stack(WARMUP);
-    bench_heap(WARMUP, false);
-    bench_heap(WARMUP, true);
-
-    auto stack_bench = bench_stack(ITERATIONS);
-    auto heap_alloc_only = bench_heap(ITERATIONS, false);
-    auto heap_full_lifecycle = bench_heap(ITERATIONS, true);
-
-    print_stats("Stack Bench", stack_bench);
-    print_stats("Heap Allocation Only", heap_alloc_only);
-    print_stats("Heap Full Lifecycle", heap_full_lifecycle);
-
+    if (mode == "stack")
+    {
+        bench_stack(WARMUP);
+        auto stack_bench = bench_stack(ITERATIONS);
+        print_stats("Stack Bench", stack_bench);
+    }
+    else if (mode == "heap_alloc")
+    {
+        bench_heap(WARMUP, false);
+        auto heap_alloc_only = bench_heap(ITERATIONS, false);
+        print_stats("Heap Allocation Only", heap_alloc_only);
+    }
+    else if (mode == "heap_full")
+    {
+        bench_heap(WARMUP, true);
+        auto heap_full_lifecycle = bench_heap(ITERATIONS, true);
+        print_stats("Heap Full Lifecycle", heap_full_lifecycle);
+    }
+    else
+    {
+        std::cerr << "Unknown mode: " << mode << "\n";
+        return 1;
+    }
     return 0;
 }
