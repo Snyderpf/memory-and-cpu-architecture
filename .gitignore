@@ -1,0 +1,18 @@
+# Compiled binaries
+main
+prog
+*.o
+*.out
+
+# CMake build directories
+build/
+cmake-build-*/
+
+# perf / benchmark scratch output
+perf_stats*.txt
+*.perf
+
+# Editor/OS cruft
+.vscode/
+.DS_Store
+*.swp
